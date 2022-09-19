@@ -1,0 +1,84 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"  lang="ru">
+<head>
+    <title> Data Generator </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css"
+          rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x"
+          crossorigin="anonymous">
+
+    <link rel="stylesheet" th:href="@{/css/main.css}"
+          href="../../css/main.css" />
+
+
+
+</head>
+<body>
+
+<div class="container">
+
+    <div class="starter-template">
+        <h1 class="d-flex justify-content-around"> Генератор данных с датчиков </h1>
+        <div class="container px-4">
+            <div class="col">
+                <div class="p-3 border bg-light">
+                    <h3>Информация о технике</h3>
+                    <ul>
+                        <li>id <span th:text="${id}"></span></li>
+                        <li>серийный номер <span th:text="${sn}"></span></li>
+                        <li>название '<span th:text="${nameEq}"></span>'</li>
+                        <li>тип '<span th:text="${typEq}"></span>'</li>
+                        <li>размер бака <span th:text="${fuelFull}"></span> л</li>
+                        <li>расход топлива <span th:text="${fuelConsumptionPerHour}"></span> л/ч</li>
+                        <li>начало смены <span th:text="${shiftDate}"></span></li>
+                        <li>последнее обновление <span th:text="${timeRead}"></span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container px-4">
+        <div class="row gx-5">
+            <div class="col">
+                <div class="text-center">
+                    <div class="p-3 border bg-light"><span th:text="${fuelLevel}"></span></div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="text-center">
+                    <div class="p-3 border bg-light">trans_fuel - текущий ровень топлива</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="p-3 border bg-light">
+                    <div class="text-center">
+                        <div class="btn-group">
+                            <a th:href="@{/fuel_on}" method="get" class="btn btn-secondary active">включить</a>
+                            <a th:href="@{/fuel_off}" method="get" class="btn btn-secondary">выключить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.container -->
+
+<div class="container">
+    <div class="text-center">
+        <form th:target="blank" th:action="@{/exit}" th:method="get">
+            <input type="submit" style="display: none;">
+            <input type="submit" class="btn btn-primary btn-lg btn-block" value="exit">
+        </form>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+        crossorigin="anonymous"></script>
+
+</body>
+</html>
