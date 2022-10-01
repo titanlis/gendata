@@ -12,7 +12,7 @@ import java.util.Calendar;
 public class TransCoord extends AbstractEntity{
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     private Long id;
     @Column(name = "equip_id", nullable = false)
     private Long equipId;                                   //id техники

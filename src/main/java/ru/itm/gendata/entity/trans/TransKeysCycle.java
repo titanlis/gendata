@@ -6,7 +6,7 @@ import javax.persistence.*;
 @Table(name = "trans_keys_cycle", schema = "trans")
 public class TransKeysCycle extends AbstractEntity{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id", nullable = false)
     private Long id;
 

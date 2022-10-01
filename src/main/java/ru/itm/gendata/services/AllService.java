@@ -62,7 +62,7 @@ public class AllService{
                     logger.info("New data: " + transCoord.toStringShow());
                 }
 
-                if(ChronoUnit.SECONDS.between(transCoordService.getLastSave(), now)>30L && transFuelList.size()>0){       //раз в 30 сек пишем в базу
+                if(ChronoUnit.SECONDS.between(transCoordService.getLastSave(), now)>30L && transCoordList.size()>0){       //раз в 30 сек пишем в базу
                     transCoordService.saveToBase(transCoordList);
                     logger.info("Saved " + transCoordList.size() + " records TransCoord");
                     transCoordList.clear();
