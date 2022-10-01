@@ -8,35 +8,18 @@ import ru.itm.gendata.components.TransCoordEntitiesGenerator;
 import ru.itm.gendata.config.SystemConfig;
 import ru.itm.gendata.entity.trans.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class TransCoordService implements TransService{
     private static Logger logger = LoggerFactory.getLogger(TransCoordService.class);
-
+    private LocalDateTime lastGeneration = LocalDateTime.now();
+    private static LocalDateTime lastSave = LocalDateTime.now();
     private TransCoord transCoord = null;
-    private Thread thread = null;
-
     private TransCoordEntitiesGenerator transCoordEntitiesGenerator;
-    private TransCoordRepository transCoordRepository;
-
-    private Runnable task = () -> {
-        logger.info("Thread TransCoord is started.");
-        while (!SystemConfig.isNeedStop() && transCoordEntitiesGenerator.getGeneratorStart()) {
-            transCoord = (TransCoord) transCoordEntitiesGenerator.getEntity();
-            if(transCoord!=null){
-                logger.info(transCoord.toString());
-                /**Пишем их в базу*/
-                saveToBase(transCoord);
-                pause(20L);
-            }
-            else{
-                pause(2L);
-            }
-        }
-        logger.info("Thread TransCoord is finished.");
-    };
-
+    private static TransCoordRepository transCoordRepository;
 
     @Autowired
     public void setTransCoordEntitiesGenerator(TransCoordEntitiesGenerator transCoordEntitiesGenerator) {
@@ -46,6 +29,22 @@ public class TransCoordService implements TransService{
     @Autowired
     public void setTransCoordRepository(TransCoordRepository transCoordRepository) {
         this.transCoordRepository = transCoordRepository;
+    }
+
+    public LocalDateTime getLastGeneration() {
+        return lastGeneration;
+    }
+
+    public void setLastGeneration(LocalDateTime lastGeneration) {
+        this.lastGeneration = lastGeneration;
+    }
+
+    public static LocalDateTime getLastSave() {
+        return lastSave;
+    }
+
+    public static void setLastSave(LocalDateTime lastSave) {
+        TransCoordService.lastSave = lastSave;
     }
 
     @Override
@@ -69,27 +68,46 @@ public class TransCoordService implements TransService{
     public void start() {
         if(!transCoordEntitiesGenerator.getGeneratorStart()){
             transCoordEntitiesGenerator.setGeneratorStart(true);
-
-            if(thread==null || !thread.isAlive()){
-                thread = new Thread(task);
-                thread.setDaemon(true);
-                thread.start();
-            }
         }
         else{
             logger.warn("Coord data generation is already enabled.");
         }
     }
-
-    @Override
-    public void saveToBase(AbstractEntity a) {
-        transCoordRepository.save((TransCoord)transCoord);
-    }
-
     @Override
     public void stop() {
         transCoordEntitiesGenerator.setGeneratorStart(false);
     }
+
+//    public void saveToBase(AbstractEntity a) {
+//        transCoordRepository.save((TransCoord)a);
+//    }
+
+    @Override
+    public String getData() {
+        if(transCoord==null){
+            return "0.0";
+        }
+        return String.valueOf(getCoordLevel());
+    }
+
+    public TransCoord generate(){
+        try{
+            transCoord = (TransCoord) transCoordEntitiesGenerator.getEntity();
+            lastGeneration = LocalDateTime.now();
+            return transCoord;
+        }
+        catch (Exception e){
+            logger.warn(e.getMessage());
+            return null;
+        }
+    }
+
+    public static synchronized void saveToBase(List<TransCoord> tC)
+    {
+        lastSave = LocalDateTime.now();
+        transCoordRepository.saveAll(tC);
+    }
+
 
     public Float getCoordLevel() {
         if(transCoord!=null){
@@ -97,4 +115,5 @@ public class TransCoordService implements TransService{
         }
         return null;
     }
+
 }

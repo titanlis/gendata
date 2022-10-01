@@ -1,16 +1,21 @@
 package ru.itm.gendata.entity.trans;
 
-import lombok.Data;
 import javax.persistence.*;
 import java.util.Calendar;
 
+/**
+ * Транс данные по уровню топлива
+ */
 @Entity
 @Table(name = "trans_fuel", schema = "trans")
 public class TransFuel extends AbstractEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+//    @SequenceGenerator(name = "seq",
+//            sequenceName = "sequence",
+//            initialValue = 1, allocationSize = 20)
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
+    @GeneratedValue
     private Long id;
-
 
     @Column(name = "equip_id")
     private Long equipId;

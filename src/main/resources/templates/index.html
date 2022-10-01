@@ -90,7 +90,30 @@
     </div>
 
 
-
+    <div class="container px-4">
+        <div class="row gx-5">
+            <div class="col">
+                <div class="text-center">
+                    <div class="p-3 border bg-light"><span th:text="${sensorLevel}"></span></div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="text-center">
+                    <div class="p-3 border bg-light">trans_sensor - сенсор пробега</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="p-3 border bg-light">
+                    <div class="text-center">
+                        <div class="btn-group">
+                            <a th:href="@{/sensor_on}" method="get" class="btn btn-secondary active">включить</a>
+                            <a th:href="@{/sensor_off}" method="get" class="btn btn-secondary">выключить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 </div>

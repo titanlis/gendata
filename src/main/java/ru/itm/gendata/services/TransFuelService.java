@@ -7,38 +7,33 @@ import org.springframework.stereotype.Service;
 import ru.itm.gendata.components.TransFuelEntityGenerator;
 import ru.itm.gendata.config.SystemConfig;
 import ru.itm.gendata.entity.trans.AbstractEntity;
+import ru.itm.gendata.entity.trans.TransCoord;
 import ru.itm.gendata.entity.trans.TransFuel;
 import ru.itm.gendata.entity.trans.TransFuelRepository;
 
+import java.time.LocalDateTime;
 import java.util.Calendar;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class TransFuelService implements TransService{
     private static Logger logger = LoggerFactory.getLogger(TransFuelService.class);
-
     private TransFuel transFuel = null;
-    private Thread thread = null;
-
+    private LocalDateTime lastGeneration = LocalDateTime.now();
+    private static LocalDateTime lastSave = LocalDateTime.now();
     private TransFuelEntityGenerator transFuelEntityGenerator;
-    private TransFuelRepository transFuelRepository;
+    private static TransFuelRepository transFuelRepository;
 
-    private Runnable task = () -> {
-        logger.info("Thread TransFuel is started.");
-        while (!SystemConfig.isNeedStop() && transFuelEntityGenerator.getGeneratorStart()) {
-            transFuel = (TransFuel) transFuelEntityGenerator.getEntity();
-            if(transFuel!=null){
-                logger.info(transFuel.toString());
-                /**Пишем их в базу*/
-                saveToBase(transFuel);
-                pause(300L);            //пишем раз в 5 минут
-            }
-            else{
-                pause(2L);
-            }
-        }
-        logger.info("Thread TransFuel is finished.");
-    };
+    @Autowired
+    public void setTransFuelEntityGenerator(TransFuelEntityGenerator transFuelEntityGenerator) {
+        this.transFuelEntityGenerator = transFuelEntityGenerator;
+    }
+
+    @Autowired
+    public void setTransFuelRepository(TransFuelRepository transFuelRepository) {
+        this.transFuelRepository = transFuelRepository;
+    }
 
 
     /**
@@ -57,33 +52,6 @@ public class TransFuelService implements TransService{
         }
     }
 
-
-    @Autowired
-    public void setTransFuelEntityGenerator(TransFuelEntityGenerator transFuelEntityGenerator) {
-        this.transFuelEntityGenerator = transFuelEntityGenerator;
-    }
-
-    @Autowired
-    public void setTransFuelRepository(TransFuelRepository transFuelRepository) {
-        this.transFuelRepository = transFuelRepository;
-    }
-
-    public Thread getThread() {
-        return thread;
-    }
-
-    public void setThread(Thread thread) {
-        this.thread = thread;
-    }
-
-    public TransFuelRepository getTransFuelRepository() {
-        return transFuelRepository;
-    }
-
-    public TransFuelEntityGenerator getTransFuelEntityGenerator() {
-        return transFuelEntityGenerator;
-    }
-
     @Override
     public Boolean isStarting(){
         return transFuelEntityGenerator!=null && transFuelEntityGenerator.getGeneratorStart();
@@ -93,31 +61,59 @@ public class TransFuelService implements TransService{
     public void start(){
         if(!transFuelEntityGenerator.getGeneratorStart()){
             transFuelEntityGenerator.setGeneratorStart(true);
-
-            if(thread==null || !thread.isAlive()){
-                thread = new Thread(task);
-                thread.setDaemon(true);
-                thread.start();
-            }
         }
         else{
             logger.warn("Fuel data generation is already enabled.");
         }
     }
 
+    @Override
+    public void stop(){
+        transFuelEntityGenerator.setGeneratorStart(false);
+    }
 
     /**
      * сделаем запись в базу потокобезопасной
      * @param transFuel
      */
-    @Override
-    public synchronized void saveToBase(AbstractEntity transFuel) {
-        transFuelRepository.save((TransFuel)transFuel);
-    }
+//    @Override
+//    public synchronized void saveToBase(AbstractEntity transFuel) {
+//        transFuelRepository.save((TransFuel)transFuel);
+//    }
 
     @Override
-    public void stop(){
-        transFuelEntityGenerator.setGeneratorStart(false);
+    public String getData() {
+        if(transFuel==null){
+            return "0.0";
+        }
+        return String.valueOf(getFuelLevel());
+    }
+
+    public LocalDateTime getLastGeneration() {
+        return lastGeneration;
+    }
+
+    public static LocalDateTime getLastSave() {
+        return lastSave;
+    }
+
+    public TransFuel generate(){
+        try{
+            transFuel = (TransFuel) transFuelEntityGenerator.getEntity();
+            lastGeneration = LocalDateTime.now();
+            return transFuel;
+        }
+        catch (Exception e){
+            logger.warn(e.getMessage());
+            return null;
+        }
+    }
+
+
+    public static synchronized void saveToBase(List<TransFuel> tF)
+    {
+        lastSave = LocalDateTime.now();
+        transFuelRepository.saveAll(tF);
     }
 
 

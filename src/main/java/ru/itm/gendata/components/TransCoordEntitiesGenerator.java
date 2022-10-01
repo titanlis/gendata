@@ -1,6 +1,5 @@
 package ru.itm.gendata.components;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.itm.gendata.config.SystemConfig;
 import ru.itm.gendata.entity.trans.AbstractEntity;
@@ -10,6 +9,9 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Random;
 
+/**
+ * Генератор данных для координат
+ */
 @Component
 public class TransCoordEntitiesGenerator implements AbstractEntitiesGenerator {
 

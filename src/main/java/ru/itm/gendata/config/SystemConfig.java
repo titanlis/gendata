@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.itm.gendata.entity.equipment.Equipment;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -106,5 +109,35 @@ public class SystemConfig {
             logger.info("sleep aborting");
         }
     }
+
+    /**
+     * Возвращает время начала смены. 9:00
+     * Если сейчас, например 8 часов, то значит смена началась в 9:00, но вчера.
+     * Если сейчас 14:00, то значит смена началась сегодня в 9:00
+     * @return начало смены
+     */
+    public static Calendar getStartShift() {
+        Calendar calendar = Calendar.getInstance();
+        if(calendar.get(Calendar.HOUR_OF_DAY)<9){
+            calendar.set(Calendar.DATE,calendar.get(Calendar.DATE)-1);
+        }
+        calendar.set(Calendar.HOUR_OF_DAY,9);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        return calendar;
+    }
+
+
+    public static LocalDate getStartShiftLocalDate() {
+        Calendar calendar = Calendar.getInstance();
+        if(calendar.get(Calendar.HOUR_OF_DAY)<9){
+            calendar.set(Calendar.DATE,calendar.get(Calendar.DATE)-1);
+        }
+        calendar.set(Calendar.HOUR_OF_DAY,9);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        return LocalDate.ofInstant(calendar.toInstant(), ZoneId.systemDefault());
+    }
+
 
 }

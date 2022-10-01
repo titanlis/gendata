@@ -14,9 +14,7 @@ import ru.itm.gendata.components.TransCoordEntitiesGenerator;
 import ru.itm.gendata.components.TransFuelEntityGenerator;
 import ru.itm.gendata.config.SystemConfig;
 import ru.itm.gendata.entity.trans.*;
-import ru.itm.gendata.services.InitService;
-import ru.itm.gendata.services.TransCoordService;
-import ru.itm.gendata.services.TransFuelService;
+import ru.itm.gendata.services.*;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -30,52 +28,17 @@ public class MainController {
     private static Logger logger = LoggerFactory.getLogger(MainController.class);
 
     private InitService initService;
-    private TransFuelService transFuelService;
-    private TransCoordService transCoordService;
+    private AllService allService;
 
     @Autowired
-    public void setTransCoordService(TransCoordService transCoordService) {
-        this.transCoordService = transCoordService;
-    }
-
-    @Autowired
-    public void setTransFuelService(TransFuelService transFuelService) {
-        this.transFuelService = transFuelService;
+    public void setAllService(AllService allService) {
+        this.allService = allService;
     }
 
     @Autowired
     public void setInitService(InitService initService) {
         this.initService = initService;
     }
-
-
-    /**Флаг отключения сервиса*/
-//    private static Boolean startService = true;
-
-    /**Инжектируем генератор trans_fuel и trans_fuel репозиторий для записи в базу h2*/
-//    private final TransFuelEntityGenerator transFuelEntityGenerator;
-//    private final TransCoordEntitiesGenerator transCoordEntitiesGenerator;
-//    private final TransFuelRepository transFuelRepository;
-//    private final TransCoordRepository transCoordRepository;
-
-//    @Autowired
-//    public MainController(TransFuelEntityGenerator transFuelEntityGenerator, TransCoordEntitiesGenerator transCoordEntitiesGenerator, TransFuelRepository transFuelRepository, TransCoordRepository transCoordRepository) {
-//        this.transFuelEntityGenerator = transFuelEntityGenerator;
-//        this.transCoordEntitiesGenerator = transCoordEntitiesGenerator;
-//        this.transFuelRepository = transFuelRepository;
-//        this.transCoordRepository = transCoordRepository;
-//    }
-
-//    @Autowired
-//    public MainController(
-//            TransFuelEntityGenerator transFuelEntityGenerator, TransCoordEntitiesGenerator transCoordEntitiesGenerator,
-//            TransFuelRepository transFuelRepository, TransCoordRepository transCoordRepository) {
-//        this.transFuelEntityGenerator = transFuelEntityGenerator;
-//        this.transCoordEntitiesGenerator = transCoordEntitiesGenerator;
-//        this.transFuelRepository = transFuelRepository;
-//        this.transCoordRepository = transCoordRepository;
-//    }
-
 
     /**
      * Заполним модель данных о текущем оборудовании для фронта
@@ -90,10 +53,12 @@ public class MainController {
         model.put("typEq", SystemConfig.getEquipmentType());
         model.put("fuelFull", SystemConfig.getFuelFull());
         model.put("fuelConsumptionPerHour", SystemConfig.getFuelConsumptionPerHour());
-        model.put("shiftDate", transFuelService.getShiftDate().getTime());
-        model.put("timeRead", transFuelService.getTimeRead().getTime());
-        model.put("fuelLevel", transFuelService.getFuelLevel());
-        model.put("coordLevel", transCoordService.getCoordLevel());
+        model.put("shiftDate", allService.getTransFuelService().getShiftDate().getTime());
+        model.put("timeRead", allService.getTransFuelService().getTimeRead().getTime());
+
+        model.put("fuelLevel", allService.getTransFuelService().getData());
+        model.put("coordLevel", allService.getTransCoordService().getData());
+        model.put("sensorLevel", allService.getTransSensorService().getData());
 
         return "index.html";
     }
@@ -105,10 +70,8 @@ public class MainController {
      */
     @RequestMapping(value="/fuel_on", method= RequestMethod.GET)
     public String fuelOn(Map<String, Object> model) {
-        if(!transFuelService.isStarting()){
-            transFuelService.start();
-        }
-        model.put("fuelLevel", transFuelService.getFuelLevel());
+        allService.fuelOnOF(true);
+        allService.generateOneTransFuel();
         return  "redirect:/";
     }
 
@@ -119,10 +82,7 @@ public class MainController {
      */
     @RequestMapping(value="/fuel_off", method= RequestMethod.GET)
     public String fuelOff(Map<String, Object> model) {
-        if(transFuelService.isStarting()){
-            transFuelService.stop();
-        }
-        model.put("fuelLevel", transFuelService.getFuelLevel());
+        allService.fuelOnOF(false);
         return  "redirect:/";
     }
 
@@ -133,10 +93,8 @@ public class MainController {
      */
     @RequestMapping(value="/coord_on", method= RequestMethod.GET)
     public String coordOn(Map<String, Object> model) {
-        if(!transCoordService.isStarting()){
-            transCoordService.start();
-        }
-        model.put("coordLevel", transCoordService.getCoordLevel());
+        allService.coordOnOF(true);
+        allService.generateOneTransCoord();
         return  "redirect:/";
     }
 
@@ -147,49 +105,33 @@ public class MainController {
      */
     @RequestMapping(value="/coord_off", method= RequestMethod.GET)
     public String coordOff(Map<String, Object> model) {
-        if(transCoordService.isStarting()){
-            transCoordService.stop();
-        }
-        model.put("coordLevel", transCoordService.getCoordLevel());
+        allService.coordOnOF(false);
         return  "redirect:/";
     }
 
 
-
     /**
-     * Выход из сервиса
+     * Кнопка включить генерацию trans_sensor
+     * @param model
      * @return
      */
-//    @RequestMapping(value="/exit", method= RequestMethod.GET)
-//    public String exitServ() {
-//        logger.info("exit");
-//        MainController.startService = false;
-//        try {
-//            TimeUnit.SECONDS.sleep(5L);
-//        } catch (InterruptedException ex) {
-//            logger.info("sleep aborting");
-//        }
-//        (new ShutdownManager()).stopPage();
-//        //System.exit(0);
-//        return  "redirect:/";
-//    }
+    @RequestMapping(value="/sensor_on", method= RequestMethod.GET)
+    public String sensorOn(Map<String, Object> model) {
+        allService.sensorOnOF(true);
+        allService.generateOneTransSensor();
+        return  "redirect:/";
+    }
 
-//    private void transFuelGenerator(){
-//        System.out.println("++++");
-//        while (!TransFuelEntityGenerator.getGeneratorStart()) {
-//            try {
-//                TimeUnit.SECONDS.sleep(2L);
-//            } catch (InterruptedException ex) {
-//                logger.info("sleep aborting");
-//            }
-//        }
-//        /**Получаем новые данные*/
-//        AbstractEntity abstractEntity = transFuelEntityGenerator.getEntity();
-//        logger.info(abstractEntity.toString());
-//        /**Пишем их в базу*/
-//        transFuelRepository.save((TransFuel) abstractEntity);
-//        /**Ждем 300сек или 5 мин*/
-//    }
+    /**
+     * Кнопка выключить генерацию trans_sensor
+     * @param model
+     * @return
+     */
+    @RequestMapping(value="/sensor_off", method= RequestMethod.GET)
+    public String sensorOff(Map<String, Object> model) {
+        allService.sensorOnOF(false);
+        return  "redirect:/";
+    }
 
     /**
      * Автозапуск сервиса после создания контекста
@@ -197,46 +139,5 @@ public class MainController {
     @EventListener(ApplicationReadyEvent.class)
     private void startGenerations(){
         initService.initEquipmentInfo();
-//        /**Цикл пока не пришла команда на завершение*/
-//        while(startService){
-//            /**Если нужно генерировать trans_fuel, то делаем это */
-////            if(TransFuelEntityGenerator.getGeneratorStart()||TransCoordEntitiesGenerator.getGeneratorStart()){
-//            if(TransFuelEntityGenerator.getGeneratorStart()){
-//                /**Получаем новые данные*/
-//                AbstractEntity abstractEntity = transFuelEntityGenerator.getEntity();
-//                logger.info(abstractEntity.toString());
-//                /**Пишем их в базу*/
-//                transFuelRepository.save((TransFuel) abstractEntity);
-//                /**Ждем 300сек или 5 мин*/
-//            }
-//
-////                if(TransCoordEntitiesGenerator.getGeneratorStart()){
-////                    System.out.println("TransCoordEntitiesGenerator starting");
-////                    /**Получаем новые данные*/
-////                    AbstractEntity abstractEntity = transCoordEntitiesGenerator.getEntity();
-////                    logger.info(abstractEntity.toString());
-////                    /**Пишем их в базу*/
-////                    transCoordRepository.save((TransCoord) abstractEntity);
-////                    /**Ждем 300сек или 5 мин*/
-////                }
-//
-////                if(TransFuelEntityGenerator.getGeneratorStart()&&TransCoordEntitiesGenerator.getGeneratorStart()){
-//                    try {
-//                        TimeUnit.SECONDS.sleep(30L);
-//                    } catch (InterruptedException ex) {
-//                        logger.info("sleep aborting");
-//                    }
-////                }
-//            }
-//            else{
-//                /**Раз в 2 сек проверяет не пришла ли команда запустить генерацию данных*/
-//                try {
-//                    TimeUnit.SECONDS.sleep(2L);
-//                } catch (InterruptedException ex) {
-//                    logger.info("sleep aborting");
-//                }
-//            }
-//        }
-//        System.exit(0);
     }
 }
