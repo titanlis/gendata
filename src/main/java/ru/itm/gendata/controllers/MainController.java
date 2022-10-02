@@ -5,19 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import ru.itm.gendata.components.TransCoordEntitiesGenerator;
-import ru.itm.gendata.components.TransFuelEntityGenerator;
 import ru.itm.gendata.config.SystemConfig;
-import ru.itm.gendata.entity.trans.*;
 import ru.itm.gendata.services.*;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Основной контроллер для организации генерации данных и записи их в h2
@@ -60,6 +54,8 @@ public class MainController {
         model.put("coordLevel", allService.getTransCoordService().getData());
         model.put("sensorLevel", allService.getTransSensorService().getData());
         model.put("keysCycle", allService.getTransKeysCycleService().getData());
+        model.put("keysDrilling", allService.getTransKeysDrillingService().getData());
+        model.put("transNetwork", allService.getTransNetworkService().getData());
 
         return "index.html";
     }
@@ -71,8 +67,8 @@ public class MainController {
      */
     @RequestMapping(value="/fuel_on", method= RequestMethod.GET)
     public String fuelOn(Map<String, Object> model) {
-        allService.fuelOnOF(true);
-        allService.generateOneTransFuel();
+        allService.on("trans_fuel");
+        allService.generateOne("trans_fuel");
         return  "redirect:/";
     }
 
@@ -83,7 +79,7 @@ public class MainController {
      */
     @RequestMapping(value="/fuel_off", method= RequestMethod.GET)
     public String fuelOff(Map<String, Object> model) {
-        allService.fuelOnOF(false);
+        allService.off("trans_fuel");
         return  "redirect:/";
     }
 
@@ -94,8 +90,8 @@ public class MainController {
      */
     @RequestMapping(value="/coord_on", method= RequestMethod.GET)
     public String coordOn(Map<String, Object> model) {
-        allService.coordOnOF(true);
-        allService.generateOneTransCoord();
+        allService.on("trans_coord");
+        allService.generateOne("trans_coord");
         return  "redirect:/";
     }
 
@@ -106,7 +102,7 @@ public class MainController {
      */
     @RequestMapping(value="/coord_off", method= RequestMethod.GET)
     public String coordOff(Map<String, Object> model) {
-        allService.coordOnOF(false);
+        allService.off("trans_coord");
         return  "redirect:/";
     }
 
@@ -118,8 +114,8 @@ public class MainController {
      */
     @RequestMapping(value="/sensor_on", method= RequestMethod.GET)
     public String sensorOn(Map<String, Object> model) {
-        allService.sensorOnOF(true);
-        allService.generateOneTransSensor();
+        allService.on("trans_sensor");
+        allService.generateOne("trans_sensor");
         return  "redirect:/";
     }
 
@@ -130,23 +126,48 @@ public class MainController {
      */
     @RequestMapping(value="/sensor_off", method= RequestMethod.GET)
     public String sensorOff(Map<String, Object> model) {
-        allService.sensorOnOF(false);
+        allService.off("trans_sensor");
         return  "redirect:/";
     }
 
     @RequestMapping(value="/keys_cycles_on", method= RequestMethod.GET)
     public String keysCyclesOn(Map<String, Object> model) {
-        allService.keysCycleOnOF(true);
-        allService.generateOneTransKeysCycle();
+        allService.on("trans_keys_cycle");
+        allService.generateOne("trans_keys_cycle");
         return  "redirect:/";
     }
 
     @RequestMapping(value="/keys_cycles_off", method= RequestMethod.GET)
     public String keysCyclesOff(Map<String, Object> model) {
-        allService.keysCycleOnOF(false);
+        allService.off("trans_keys_cycle");
         return  "redirect:/";
     }
 
+    @RequestMapping(value="/keys_drilling_on", method= RequestMethod.GET)
+    public String keysDrillingOn(Map<String, Object> model) {
+        allService.on("trans_keys_drilling");
+        allService.generateOne("trans_keys_drilling");
+        return  "redirect:/";
+    }
+
+    @RequestMapping(value="/keys_drilling_off", method= RequestMethod.GET)
+    public String keysDrillingOff(Map<String, Object> model) {
+        allService.off("trans_keys_drilling");
+        return  "redirect:/";
+    }
+
+    @RequestMapping(value="/trans_network_on", method= RequestMethod.GET)
+    public String transNetworkOn(Map<String, Object> model) {
+        allService.on("trans_network");
+        allService.generateOne("trans_network");
+        return  "redirect:/";
+    }
+
+    @RequestMapping(value="/trans_network_off", method= RequestMethod.GET)
+    public String transNetworkOff(Map<String, Object> model) {
+        allService.off("trans_network");
+        return  "redirect:/";
+    }
 
     /**
      * Автозапуск сервиса после создания контекста

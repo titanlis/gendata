@@ -9,14 +9,13 @@ import ru.itm.gendata.config.SystemConfig;
 import ru.itm.gendata.entity.trans.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class TransCoordService implements TransService{
+public class TransCoordService extends TransService{
     private static Logger logger = LoggerFactory.getLogger(TransCoordService.class);
-    private LocalDateTime lastGeneration = LocalDateTime.now();
-    private static LocalDateTime lastSave = LocalDateTime.now();
     private TransCoord transCoord = null;
     private TransCoordEntitiesGenerator transCoordEntitiesGenerator;
     private static TransCoordRepository transCoordRepository;
@@ -31,21 +30,6 @@ public class TransCoordService implements TransService{
         this.transCoordRepository = transCoordRepository;
     }
 
-    public LocalDateTime getLastGeneration() {
-        return lastGeneration;
-    }
-
-    public void setLastGeneration(LocalDateTime lastGeneration) {
-        this.lastGeneration = lastGeneration;
-    }
-
-    public static LocalDateTime getLastSave() {
-        return lastSave;
-    }
-
-    public static void setLastSave(LocalDateTime lastSave) {
-        TransCoordService.lastSave = lastSave;
-    }
 
     @Override
     public Boolean isStarting(){
@@ -66,9 +50,6 @@ public class TransCoordService implements TransService{
         transCoordEntitiesGenerator.setGeneratorStart(false);
     }
 
-//    public void saveToBase(AbstractEntity a) {
-//        transCoordRepository.save((TransCoord)a);
-//    }
 
     @Override
     public String getData() {
@@ -78,6 +59,7 @@ public class TransCoordService implements TransService{
         return String.valueOf(getCoordLevel());
     }
 
+    @Override
     public TransCoord generate(){
         try{
             transCoord = (TransCoord) transCoordEntitiesGenerator.getEntity();
@@ -90,10 +72,13 @@ public class TransCoordService implements TransService{
         }
     }
 
-    public static synchronized void saveToBase(List<TransCoord> tC)
+    @Override
+    public synchronized void saveToBase(List<AbstractEntity> aE)
     {
+        List<TransCoord> transCoordList = new ArrayList<>();
+        aE.stream().forEach(a->transCoordList.add((TransCoord) a));
         lastSave = LocalDateTime.now();
-        transCoordRepository.saveAll(tC);
+        transCoordRepository.saveAll(transCoordList);
     }
 
 

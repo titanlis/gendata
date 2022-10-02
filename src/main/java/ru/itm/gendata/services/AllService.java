@@ -5,14 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.itm.gendata.config.SystemConfig;
-import ru.itm.gendata.entity.trans.TransCoord;
-import ru.itm.gendata.entity.trans.TransFuel;
-import ru.itm.gendata.entity.trans.TransKeysCycle;
-import ru.itm.gendata.entity.trans.TransSensor;
+import ru.itm.gendata.entity.trans.*;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -24,90 +20,65 @@ public class AllService{
     private TransCoordService transCoordService;
     private TransSensorService transSensorService;
     private TransKeysCycleService transKeysCycleService;
+    private TransKeysDrillingService transKeysDrillingService;
+    private TransNetworkService transNetworkService;
     private Thread thread = null;
 
     @Autowired
     public AllService(TransFuelService transFuelService, TransCoordService transCoordService,
-                      TransSensorService transSensorService, TransKeysCycleService transKeysCycleService) {
+                      TransSensorService transSensorService, TransKeysCycleService transKeysCycleService,
+                      TransKeysDrillingService transKeysDrillingService, TransNetworkService transNetworkService) {
         this.transFuelService = transFuelService;
         this.transCoordService = transCoordService;
         this.transSensorService = transSensorService;
         this.transKeysCycleService = transKeysCycleService;
+        this.transKeysDrillingService = transKeysDrillingService;
+        this.transNetworkService = transNetworkService;
     }
 
     private Runnable task = () -> {
         logger.info("Thread Trans Generator Data is started.");
         LocalDateTime now;
-        List<TransFuel> transFuelList = new LinkedList<>();
-        List<TransCoord> transCoordList = new LinkedList<>();
-        List<TransSensor> transSensorList = new LinkedList<>();
-        List<TransKeysCycle> transKeysCycleList = new LinkedList<>();
+        List<AbstractEntity> transFuelList = new LinkedList<>();
+        List<AbstractEntity> transCoordList = new LinkedList<>();
+        List<AbstractEntity> transSensorList = new LinkedList<>();
+        List<AbstractEntity> transKeysCycleList = new LinkedList<>();
+        List<AbstractEntity> transKeysDrillingList = new LinkedList<>();
+        List<AbstractEntity> transNetworkList = new LinkedList<>();
 
         while (!SystemConfig.isNeedStop()) {
             now = LocalDateTime.now();
 
-            if(transFuelService!=null && transFuelService.isStarting()){
-                if(ChronoUnit.SECONDS.between(transFuelService.getLastGeneration(),now)>60L){  //раз в минуту фиксируем значение
-                    TransFuel transFuel = transFuelService.generate();
-                    transFuelList.add(transFuel);
-                    logger.info("New data: " + transFuel.toStringShow());
-                }
-
-                if(ChronoUnit.SECONDS.between(transFuelService.getLastSave(), now)>300L && transFuelList.size()>0){       //раз в 5 минут пишем в базу
-                    transFuelService.saveToBase(transFuelList);
-                    logger.info("Saved " + transFuelList.size() + " records TransFuel");
-                    transFuelList.clear();
-                }
-            }
-
-            if(transCoordService!=null && transCoordService.isStarting()){
-                if(ChronoUnit.SECONDS.between(transCoordService.getLastGeneration(),now)>10L){  //раз в 10 сек фиксируем значение
-                    TransCoord transCoord = transCoordService.generate();
-                    transCoordList.add(transCoord);
-                    logger.info("New data: " + transCoord.toStringShow());
-                }
-
-                if(ChronoUnit.SECONDS.between(transCoordService.getLastSave(), now)>30L && transCoordList.size()>0){       //раз в 30 сек пишем в базу
-                    transCoordService.saveToBase(transCoordList);
-                    logger.info("Saved " + transCoordList.size() + " records TransCoord");
-                    transCoordList.clear();
-                }
-            }
-
-            if(transSensorService!=null && transSensorService.isStarting()) {
-                if(ChronoUnit.SECONDS.between(transSensorService.getLastGeneration(),now)>20L){  //раз в 20 сек фиксируем значение
-                    TransSensor transSensor = transSensorService.generate();
-                    transSensorList.add(transSensor);
-                    logger.info("New data: " + transSensor.toStringShow());
-                }
-
-                if(ChronoUnit.SECONDS.between(transSensorService.getLastSave(), now)>60L && transSensorList.size()>0){       //раз в 60 сек пишем в базу
-                    transSensorService.saveToBase(transSensorList);
-                    logger.info("Saved " + transSensorList.size() + " records TransSensor");
-                    transSensorList.clear();
-                }
-            }
-
-
-            if(transKeysCycleService!=null && transKeysCycleService.isStarting()) {
-                if(ChronoUnit.SECONDS.between(transKeysCycleService.getLastGeneration(),now)>45L){  //раз в 45 сек фиксируем значение
-                    TransKeysCycle transKeysCycle = transKeysCycleService.generate();
-                    transKeysCycleList.add(transKeysCycle);
-                    logger.info("New data: " + transKeysCycle.toStringShow());
-                }
-
-                if(ChronoUnit.SECONDS.between(transKeysCycleService.getLastSave(), now)>120L && transKeysCycleList.size()>0){       //раз в 2 мин пишем в базу
-                    transKeysCycleService.saveToBase(transKeysCycleList);
-                    logger.info("Saved " + transKeysCycleList.size() + " records TransKeysCycle");
-                    transKeysCycleList.clear();
-                }
-            }
-
+            transGenerate("trans_fuel", 60L, 300L, now, transFuelList);
+            transGenerate("trans_coord", 10L, 30L, now, transCoordList);
+            transGenerate("trans_sensor", 20L, 60L, now, transSensorList);
+            transGenerate("trans_keys_cycle", 45L, 120L, now, transKeysCycleList);
+            transGenerate("trans_keys_drilling", 45L, 120L, now, transKeysDrillingList);
+            transGenerate("trans_network", 30L, 120L, now, transNetworkList);
 
             pause(1L);    //сек
         }
         logger.info("Thread Trans Generator Data is finished.");
     };
+
+    private void transGenerate(String tableName, long fixTimeSeconds, long saveTimeSeconds, LocalDateTime now, List<AbstractEntity> abstractEntityList) {
+        TransService transService = getService(tableName);
+
+        if(transService!=null && transService.isStarting()){
+            if(ChronoUnit.SECONDS.between(transService.getLastGeneration(),now)>fixTimeSeconds){  //раз в минуту фиксируем значение
+                AbstractEntity abstractEntity = transService.generate();
+                abstractEntityList.add(abstractEntity);
+                logger.info("New data: " + abstractEntity.toStringShow());
+            }
+
+            if(ChronoUnit.SECONDS.between(transService.getLastSave(), now)>saveTimeSeconds && abstractEntityList.size()>0){       //раз в 5 минут пишем в базу
+                transService.saveToBase(abstractEntityList);
+                logger.info("Saved " + abstractEntityList.size() + " records " + tableName);
+                abstractEntityList.clear();
+            }
+        }
+
+    }
 
     public void start(){
         if(thread==null || !thread.isAlive()){
@@ -135,93 +106,57 @@ public class AllService{
         }
     }
 
-
     public TransFuelService getTransFuelService() {
         return transFuelService;
     }
-
     public TransCoordService getTransCoordService() {
         return transCoordService;
     }
-
     public TransSensorService getTransSensorService() {
         return transSensorService;
     }
     public TransKeysCycleService getTransKeysCycleService() {
         return transKeysCycleService;
     }
-    public void fuelOnOF(boolean start){
-
-        if(start){
-            start();    //старт потока
-            if(!transFuelService.isStarting()){
-                transFuelService.start();
-                logger.info("TransFuel generation is start.");
-            }
-        }
-        else{
-            logger.info("TransFuel generation is stop.");
-            transFuelService.stop();
-        }
+    public TransKeysDrillingService getTransKeysDrillingService() {
+        return transKeysDrillingService;
+    }
+    public TransNetworkService getTransNetworkService() {
+        return transNetworkService;
     }
 
-    public void coordOnOF(boolean start) {
-        if(start){
-            start();    //старт потока
-            if(!transCoordService.isStarting()){
-                transCoordService.start();
-                logger.info("TransCoord generation is start.");
-            }
-        }
-        else{
-            logger.info("TransCoord generation is stop.");
-            transCoordService.stop();
+    public void on(String tableName) {
+        TransService transService = getService(tableName);
+        start();
+        if(!transService.isStarting()){
+            transService.start();
+            logger.info(tableName + " generation is start.");
         }
     }
 
-    public void sensorOnOF(boolean start) {
-        if(start){
-            start();    //старт потока
-            if(!transSensorService.isStarting()){
-                transSensorService.start();
-                logger.info("TransSensor generation is start.");
-            }
+    public void off(String tableName) {
+        logger.info(tableName + " generation is stop.");
+        getService(tableName).stop();
+    }
+
+    public TransService getService(String tableName){
+        return switch(tableName){
+            case "trans_fuel" -> transFuelService;
+            case "trans_coord" -> transCoordService;
+            case "trans_keys_cycle" -> transKeysCycleService;
+            case "trans_keys_drilling" -> transKeysDrillingService;
+            case "trans_sensor" -> transSensorService;
+            case "trans_network" -> transNetworkService;
+            default -> null;
+        };
+    }
+
+    public AbstractEntity generateOne(String tableName){
+        TransService transService = getService(tableName);
+        if(transService==null){
+            return null;
         }
-        else{
-            logger.info("TransSensor generation is stop.");
-            transSensorService.stop();
-        }
+        return transService.generate();
     }
-
-    public void keysCycleOnOF(boolean start) {
-        if(start){
-            start();    //старт потока
-            if(!transKeysCycleService.isStarting()){
-                transKeysCycleService.start();
-                logger.info("TransKeysCycle generation is start.");
-            }
-        }
-        else{
-            logger.info("TransKeysCycle generation is stop.");
-            transKeysCycleService.stop();
-        }
-    }
-
-
-    public TransFuel generateOneTransFuel(){
-        return transFuelService.generate();
-    }
-
-    public TransCoord generateOneTransCoord() {
-        return transCoordService.generate();
-    }
-
-    public TransSensor generateOneTransSensor() {
-        return transSensorService.generate();
-    }
-    public TransKeysCycle generateOneTransKeysCycle() {
-        return transKeysCycleService.generate();
-    }
-
 
 }

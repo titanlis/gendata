@@ -43,7 +43,7 @@ public class TransFuel extends AbstractEntity {
 
     @Override
     public String toString() {
-        return "TransFuel{" +
+        return "trans.trans_fuel{" +
                 "id=" + id +
                 ", equipId=" + equipId +
                 ", shiftDate=" + shiftDate.getTime() +

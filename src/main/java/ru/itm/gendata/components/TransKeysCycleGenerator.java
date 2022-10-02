@@ -6,9 +6,6 @@ import org.springframework.stereotype.Component;
 import ru.itm.gendata.config.SystemConfig;
 import ru.itm.gendata.entity.trans.AbstractEntity;
 import ru.itm.gendata.entity.trans.TransKeysCycle;
-import ru.itm.gendata.entity.trans.TransSensor;
-
-import java.util.Calendar;
 import java.util.Random;
 
 @Component

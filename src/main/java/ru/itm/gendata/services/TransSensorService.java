@@ -12,14 +12,13 @@ import ru.itm.gendata.entity.trans.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 @Service
-public class TransSensorService implements TransService {
+public class TransSensorService extends TransService {
     private static Logger logger = LoggerFactory.getLogger(TransSensorService.class);
-    private LocalDateTime lastGeneration = LocalDateTime.now();
-    private static LocalDateTime lastSave = LocalDateTime.now();
     private TransSensorGenerator transSensorGenerator;
     private static TransSensorRepository transSensorRepository;
     private TransSensor transSensor = null;
@@ -32,14 +31,6 @@ public class TransSensorService implements TransService {
     @Autowired
     public void setTransSensorGenerator(TransSensorGenerator transSensorGenerator) {
         this.transSensorGenerator = transSensorGenerator;
-    }
-
-    public LocalDateTime getLastGeneration() {
-        return lastGeneration;
-    }
-
-    public static LocalDateTime getLastSave() {
-        return lastSave;
     }
 
     @Override
@@ -63,11 +54,8 @@ public class TransSensorService implements TransService {
         transSensorGenerator.setGeneratorStart(false);
     }
 
-//    @Override
-//    public void saveToBase(AbstractEntity a) {
-//
-//    }
 
+    @Override
     public TransSensor generate(){
         try{
             transSensor = (TransSensor) transSensorGenerator.getEntity();
@@ -80,11 +68,15 @@ public class TransSensorService implements TransService {
         }
     }
 
-    public static synchronized void saveToBase(List<TransSensor> tS)
+    @Override
+    public synchronized void saveToBase(List<AbstractEntity> aE)
     {
+        List<TransSensor> transList = new ArrayList<>();
+        aE.stream().forEach(a->transList.add((TransSensor) a));
         lastSave = LocalDateTime.now();
-        transSensorRepository.saveAll(tS);
+        transSensorRepository.saveAll(transList);
     }
+
 
     @Override
     public String getData() {

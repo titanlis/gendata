@@ -12,16 +12,15 @@ import ru.itm.gendata.entity.trans.TransFuel;
 import ru.itm.gendata.entity.trans.TransFuelRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class TransFuelService implements TransService{
+public class TransFuelService extends TransService{
     private static Logger logger = LoggerFactory.getLogger(TransFuelService.class);
     private TransFuel transFuel = null;
-    private LocalDateTime lastGeneration = LocalDateTime.now();
-    private static LocalDateTime lastSave = LocalDateTime.now();
     private TransFuelEntityGenerator transFuelEntityGenerator;
     private static TransFuelRepository transFuelRepository;
 
@@ -56,14 +55,6 @@ public class TransFuelService implements TransService{
         transFuelEntityGenerator.setGeneratorStart(false);
     }
 
-    /**
-     * сделаем запись в базу потокобезопасной
-     * @param
-     */
-//    @Override
-//    public synchronized void saveToBase(AbstractEntity transFuel) {
-//        transFuelRepository.save((TransFuel)transFuel);
-//    }
 
     @Override
     public String getData() {
@@ -73,14 +64,7 @@ public class TransFuelService implements TransService{
         return String.valueOf(getFuelLevel());
     }
 
-    public LocalDateTime getLastGeneration() {
-        return lastGeneration;
-    }
-
-    public static LocalDateTime getLastSave() {
-        return lastSave;
-    }
-
+    @Override
     public TransFuel generate(){
         try{
             transFuel = (TransFuel) transFuelEntityGenerator.getEntity();
@@ -94,10 +78,13 @@ public class TransFuelService implements TransService{
     }
 
 
-    public static synchronized void saveToBase(List<TransFuel> tF)
+    @Override
+    public synchronized void saveToBase(List<AbstractEntity> aE)
     {
+        List<TransFuel> transList = new ArrayList<>();
+        aE.stream().forEach(a->transList.add((TransFuel) a));
         lastSave = LocalDateTime.now();
-        transFuelRepository.saveAll(tF);
+        transFuelRepository.saveAll(transList);
     }
 
 

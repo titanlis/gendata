@@ -8,30 +8,20 @@ import ru.itm.gendata.components.TransKeysCycleGenerator;
 import ru.itm.gendata.entity.trans.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class TransKeysCycleService  implements TransService{
+public class TransKeysCycleService  extends TransService{
     private static Logger logger = LoggerFactory.getLogger(TransKeysCycleService.class);
     private static TransKeysCycleRepository transKeysCycleRepository;
     private TransKeysCycleGenerator transKeysCycleGenerator;
-
     private TransKeysCycle transKeysCycle = null;
-    private LocalDateTime lastGeneration = LocalDateTime.now();
-    private static LocalDateTime lastSave = LocalDateTime.now();
-
 
     @Autowired
     public TransKeysCycleService(TransKeysCycleRepository transKeysCycleRepository, TransKeysCycleGenerator transKeysCycleGenerator) {
         this.transKeysCycleRepository = transKeysCycleRepository;
         this.transKeysCycleGenerator = transKeysCycleGenerator;
-    }
-
-    public LocalDateTime getLastGeneration() {
-        return lastGeneration;
-    }
-    public static LocalDateTime getLastSave() {
-        return lastSave;
     }
 
     @Override
@@ -63,6 +53,7 @@ public class TransKeysCycleService  implements TransService{
                 + " - " + transKeysCycleGenerator.getDataTypeSensor(transKeysCycle.getSensorDataTypeId());
     }
 
+    @Override
     public TransKeysCycle generate(){
         try{
             transKeysCycle = (TransKeysCycle) transKeysCycleGenerator.getEntity();
@@ -75,10 +66,13 @@ public class TransKeysCycleService  implements TransService{
         }
     }
 
-    public static synchronized void saveToBase(List<TransKeysCycle> tKC)
+    @Override
+    public synchronized void saveToBase(List<AbstractEntity> aE)
     {
+        List<TransKeysCycle> transList = new ArrayList<>();
+        aE.stream().forEach(a->transList.add((TransKeysCycle) a));
         lastSave = LocalDateTime.now();
-        transKeysCycleRepository.saveAll(tKC);
+        transKeysCycleRepository.saveAll(transList);
     }
 
 }
