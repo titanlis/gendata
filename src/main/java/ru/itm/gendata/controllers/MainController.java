@@ -59,6 +59,7 @@ public class MainController {
         model.put("fuelLevel", allService.getTransFuelService().getData());
         model.put("coordLevel", allService.getTransCoordService().getData());
         model.put("sensorLevel", allService.getTransSensorService().getData());
+        model.put("keysCycle", allService.getTransKeysCycleService().getData());
 
         return "index.html";
     }
@@ -132,6 +133,20 @@ public class MainController {
         allService.sensorOnOF(false);
         return  "redirect:/";
     }
+
+    @RequestMapping(value="/keys_cycles_on", method= RequestMethod.GET)
+    public String keysCyclesOn(Map<String, Object> model) {
+        allService.keysCycleOnOF(true);
+        allService.generateOneTransKeysCycle();
+        return  "redirect:/";
+    }
+
+    @RequestMapping(value="/keys_cycles_off", method= RequestMethod.GET)
+    public String keysCyclesOff(Map<String, Object> model) {
+        allService.keysCycleOnOF(false);
+        return  "redirect:/";
+    }
+
 
     /**
      * Автозапуск сервиса после создания контекста

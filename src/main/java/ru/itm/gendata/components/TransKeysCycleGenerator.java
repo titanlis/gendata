@@ -40,4 +40,24 @@ public class TransKeysCycleGenerator implements AbstractEntitiesGenerator{
     public boolean getGeneratorStart() {
         return generatorStart;
     }
+    public String getDataTypeSensor(Long idSensorDataType){
+        String[] dataTypeSensors = {
+                "GPS",
+                "WEIGHT",
+                "TPMS",
+                "PRS",
+                "MOTORHOURS",
+                "USER_LOGIN",
+                "REFUEL",
+                "UNLOAD_DATA",
+                "INCLINOMETER_SENSOR",
+                "INCLINE_DATA"
+        };
+        if(idSensorDataType>0L && idSensorDataType<11L){
+            return dataTypeSensors[(int) (idSensorDataType-1)];
+        }
+        else{
+            return "none";
+        }
+    }
 }

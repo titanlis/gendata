@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.itm.gendata.config.SystemConfig;
 import ru.itm.gendata.entity.trans.TransCoord;
 import ru.itm.gendata.entity.trans.TransFuel;
+import ru.itm.gendata.entity.trans.TransKeysCycle;
 import ru.itm.gendata.entity.trans.TransSensor;
 
 import java.time.LocalDateTime;
@@ -22,13 +23,16 @@ public class AllService{
     private TransFuelService transFuelService;
     private TransCoordService transCoordService;
     private TransSensorService transSensorService;
+    private TransKeysCycleService transKeysCycleService;
     private Thread thread = null;
 
     @Autowired
-    public AllService(TransFuelService transFuelService, TransCoordService transCoordService, TransSensorService transSensorService) {
+    public AllService(TransFuelService transFuelService, TransCoordService transCoordService,
+                      TransSensorService transSensorService, TransKeysCycleService transKeysCycleService) {
         this.transFuelService = transFuelService;
         this.transCoordService = transCoordService;
         this.transSensorService = transSensorService;
+        this.transKeysCycleService = transKeysCycleService;
     }
 
     private Runnable task = () -> {
@@ -37,6 +41,7 @@ public class AllService{
         List<TransFuel> transFuelList = new LinkedList<>();
         List<TransCoord> transCoordList = new LinkedList<>();
         List<TransSensor> transSensorList = new LinkedList<>();
+        List<TransKeysCycle> transKeysCycleList = new LinkedList<>();
 
         while (!SystemConfig.isNeedStop()) {
             now = LocalDateTime.now();
@@ -82,6 +87,23 @@ public class AllService{
                     transSensorList.clear();
                 }
             }
+
+
+            if(transKeysCycleService!=null && transKeysCycleService.isStarting()) {
+                if(ChronoUnit.SECONDS.between(transKeysCycleService.getLastGeneration(),now)>45L){  //раз в 45 сек фиксируем значение
+                    TransKeysCycle transKeysCycle = transKeysCycleService.generate();
+                    transKeysCycleList.add(transKeysCycle);
+                    logger.info("New data: " + transKeysCycle.toStringShow());
+                }
+
+                if(ChronoUnit.SECONDS.between(transKeysCycleService.getLastSave(), now)>120L && transKeysCycleList.size()>0){       //раз в 2 мин пишем в базу
+                    transKeysCycleService.saveToBase(transKeysCycleList);
+                    logger.info("Saved " + transKeysCycleList.size() + " records TransKeysCycle");
+                    transKeysCycleList.clear();
+                }
+            }
+
+
             pause(1L);    //сек
         }
         logger.info("Thread Trans Generator Data is finished.");
@@ -125,7 +147,9 @@ public class AllService{
     public TransSensorService getTransSensorService() {
         return transSensorService;
     }
-
+    public TransKeysCycleService getTransKeysCycleService() {
+        return transKeysCycleService;
+    }
     public void fuelOnOF(boolean start){
 
         if(start){
@@ -169,6 +193,21 @@ public class AllService{
         }
     }
 
+    public void keysCycleOnOF(boolean start) {
+        if(start){
+            start();    //старт потока
+            if(!transKeysCycleService.isStarting()){
+                transKeysCycleService.start();
+                logger.info("TransKeysCycle generation is start.");
+            }
+        }
+        else{
+            logger.info("TransKeysCycle generation is stop.");
+            transKeysCycleService.stop();
+        }
+    }
+
+
     public TransFuel generateOneTransFuel(){
         return transFuelService.generate();
     }
@@ -180,4 +219,9 @@ public class AllService{
     public TransSensor generateOneTransSensor() {
         return transSensorService.generate();
     }
+    public TransKeysCycle generateOneTransKeysCycle() {
+        return transKeysCycleService.generate();
+    }
+
+
 }

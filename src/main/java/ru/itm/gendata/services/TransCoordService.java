@@ -48,18 +48,6 @@ public class TransCoordService implements TransService{
     }
 
     @Override
-    public void pause(long l) {
-        for(int i = 0; i<l && !SystemConfig.isNeedStop() && transCoordEntitiesGenerator.getGeneratorStart(); i++){
-            try {
-                TimeUnit.SECONDS.sleep(1L);
-            } catch (InterruptedException ex) {
-                logger.info("sleep aborting");
-                break;
-            }
-        }
-    }
-
-    @Override
     public Boolean isStarting(){
         return transCoordEntitiesGenerator!=null && transCoordEntitiesGenerator.getGeneratorStart();
     }

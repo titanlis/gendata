@@ -65,7 +65,7 @@ public class TransKeysCycle extends AbstractEntity{
 
     @Override
     public String toString() {
-        return "trans.trans_coord" + '{' +
+        return "trans.trans_keys_cycle" + '{' +
                 "\"id\":" + id +
                 ", \"id_trans_cycle\":" + idTransCycle +
                 ", \"id_trans_sensor\":\"" + idTransSensor + "\"" +
