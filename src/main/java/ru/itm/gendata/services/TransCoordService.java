@@ -20,6 +20,25 @@ public class TransCoordService extends TransService{
     private TransCoordEntitiesGenerator transCoordEntitiesGenerator;
     private static TransCoordRepository transCoordRepository;
 
+    private LocalDateTime lastGeneration = LocalDateTime.now();
+    private LocalDateTime lastSave = LocalDateTime.now();
+    @Override
+    public LocalDateTime getLastGeneration() {
+        return lastGeneration;
+    }
+    @Override
+    public LocalDateTime getLastSave() {
+        return lastSave;
+    }
+    public void setLastGeneration(LocalDateTime lastGeneration) {
+        this.lastGeneration = lastGeneration;
+    }
+    public void setLastSave(LocalDateTime lastSave) {
+        this.lastSave = lastSave;
+    }
+
+
+
     @Autowired
     public void setTransCoordEntitiesGenerator(TransCoordEntitiesGenerator transCoordEntitiesGenerator) {
         this.transCoordEntitiesGenerator = transCoordEntitiesGenerator;
@@ -79,6 +98,11 @@ public class TransCoordService extends TransService{
         aE.stream().forEach(a->transCoordList.add((TransCoord) a));
         lastSave = LocalDateTime.now();
         transCoordRepository.saveAll(transCoordList);
+    }
+
+    @Override
+    public synchronized void saveOne(AbstractEntity abstractEntity) {
+        transCoordRepository.save((TransCoord)abstractEntity);
     }
 
 

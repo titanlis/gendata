@@ -5,6 +5,7 @@ package ru.itm.gendata.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import ru.itm.gendata.config.SystemConfig;
+import ru.itm.gendata.services.TransCycleService;
 import ru.itm.gendata.services.TransFuelService;
 
 /**
@@ -24,11 +26,18 @@ public class ShutdownManager {
 
     private static Logger logger = LoggerFactory.getLogger(ShutdownManager.class);
 
+    private TransCycleService transCycleService;
+    @Autowired
+    public void setTransCycleService(TransCycleService transCycleService) {
+        this.transCycleService = transCycleService;
+    }
+
     @Value("${management.server.port}")
     private String actuatorPort;
 
     @GetMapping("/exit")
     public String stopPage(){
+        transCycleService.stop();
         SystemConfig.setNeedStop(true);
         /*Endpoint для отключения */
         String url = "http://localhost:"+ actuatorPort +"/actuator/shutdown";

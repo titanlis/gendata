@@ -18,6 +18,24 @@ public class TransKeysCycleService  extends TransService{
     private TransKeysCycleGenerator transKeysCycleGenerator;
     private TransKeysCycle transKeysCycle = null;
 
+    private LocalDateTime lastGeneration = LocalDateTime.now();
+    private LocalDateTime lastSave = LocalDateTime.now();
+    @Override
+    public LocalDateTime getLastGeneration() {
+        return lastGeneration;
+    }
+    @Override
+    public LocalDateTime getLastSave() {
+        return lastSave;
+    }
+    public void setLastGeneration(LocalDateTime lastGeneration) {
+        this.lastGeneration = lastGeneration;
+    }
+    public void setLastSave(LocalDateTime lastSave) {
+        this.lastSave = lastSave;
+    }
+
+
     @Autowired
     public TransKeysCycleService(TransKeysCycleRepository transKeysCycleRepository, TransKeysCycleGenerator transKeysCycleGenerator) {
         this.transKeysCycleRepository = transKeysCycleRepository;
@@ -73,6 +91,11 @@ public class TransKeysCycleService  extends TransService{
         aE.stream().forEach(a->transList.add((TransKeysCycle) a));
         lastSave = LocalDateTime.now();
         transKeysCycleRepository.saveAll(transList);
+    }
+
+    @Override
+    public synchronized void saveOne(AbstractEntity abstractEntity) {
+        transKeysCycleRepository.save((TransKeysCycle)abstractEntity);
     }
 
 }

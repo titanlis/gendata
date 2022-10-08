@@ -20,6 +20,22 @@ public class TransKeysDrillingService extends TransService{
     private TransKeysDrillingGenerator transKeysDrillingGenerator;
     private TransKeysDrilling transKeysDrilling = null;
 
+    private LocalDateTime lastGeneration = LocalDateTime.now();
+    private LocalDateTime lastSave = LocalDateTime.now();
+    @Override
+    public LocalDateTime getLastGeneration() {
+        return lastGeneration;
+    }
+    @Override
+    public LocalDateTime getLastSave() {
+        return lastSave;
+    }
+    public void setLastGeneration(LocalDateTime lastGeneration) {
+        this.lastGeneration = lastGeneration;
+    }
+    public void setLastSave(LocalDateTime lastSave) {
+        this.lastSave = lastSave;
+    }
 
     @Autowired
     public TransKeysDrillingService(TransKeysDrillingGenerator transKeysDrillingGenerator, TransKeysDrillingRepository transKeysDrillingRepository) {
@@ -76,6 +92,11 @@ public class TransKeysDrillingService extends TransService{
         aE.stream().forEach(a->transList.add((TransKeysDrilling) a));
         lastSave = LocalDateTime.now();
         transKeysDrillingRepository.saveAll(transList);
+    }
+
+    @Override
+    public synchronized void saveOne(AbstractEntity abstractEntity) {
+        transKeysDrillingRepository.save((TransKeysDrilling)abstractEntity);
     }
 
 }

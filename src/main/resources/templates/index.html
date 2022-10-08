@@ -43,6 +43,36 @@
         <div class="row gx-5">
             <div class="col">
                 <div class="text-center">
+                    <div class="p-3 border bg-light">  <!-- <span th:text="${transCycle}"></span>-->
+                        <a th:href="@{/trans_cycle_one}" method="get" class="btn btn-success">новый цикл старт</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="text-center">
+                    <div class="p-3 border bg-light">
+                        <a th:href="@{/trans_cycle_off}" method="get" class="btn btn-danger">завершить цикл</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div th:class="${transCycle}" > <!--class="p-3 border bg-light">-->
+                    <div class="text-center">
+                        <div class="btn-group">
+                            <a th:href="@{/trans_cycle_on}" method="get" class="btn btn-success">включить генератор циклов</a>
+                            <a th:href="@{/trans_cycle_off}" method="get" class="btn btn-danger">выключить генератор циклов</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container px-4">
+        <div class="row gx-5">
+            <div class="col">
+                <div class="text-center">
                     <div class="p-3 border bg-light"><span th:text="${fuelLevel}"></span></div>
                 </div>
             </div>
@@ -189,6 +219,7 @@
             </div>
         </div>
     </div>
+
 
 
 </div>

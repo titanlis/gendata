@@ -56,6 +56,7 @@ public class MainController {
         model.put("keysCycle", allService.getTransKeysCycleService().getData());
         model.put("keysDrilling", allService.getTransKeysDrillingService().getData());
         model.put("transNetwork", allService.getTransNetworkService().getData());
+        model.put("transCycle", (allService.getTransCycleService().isStarting())?"p-3 border bg-info bg-gradient":"p-3 border bg-light");
 
         return "index.html";
     }
@@ -168,6 +169,35 @@ public class MainController {
         allService.off("trans_network");
         return  "redirect:/";
     }
+
+
+    @RequestMapping(value="/trans_cycle_on", method= RequestMethod.GET)
+    public String transCycleOn(Map<String, Object> model) {
+        //allService.on("trans_cycles");
+        allService.transGenerateOneAndSave("trans_cycles");
+        allService.on("trans_cycles");
+
+//        allService.generateOne("trans_cycles");
+        return  "redirect:/";
+    }
+
+    /**
+     * Генерация и сохранение одной записи tarns_cycle
+     * @param model
+     * @return
+     */
+    @RequestMapping(value="/trans_cycle_one", method= RequestMethod.GET)
+    public String transCycleOne(Map<String, Object> model) {
+        allService.transGenerateOneAndSave("trans_cycles");
+        return  "redirect:/";
+    }
+
+    @RequestMapping(value="/trans_cycle_off", method= RequestMethod.GET)
+    public String transCycleOff(Map<String, Object> model) {
+        allService.off("trans_cycles");
+        return  "redirect:/";
+    }
+
 
     /**
      * Автозапуск сервиса после создания контекста

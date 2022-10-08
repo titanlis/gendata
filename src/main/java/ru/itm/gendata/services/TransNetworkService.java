@@ -2,6 +2,7 @@ package ru.itm.gendata.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.itm.gendata.components.TransNetworkGenerator;
 import ru.itm.gendata.entity.trans.*;
@@ -17,6 +18,25 @@ public class TransNetworkService extends TransService{
     private TransNetworkGenerator transNetworkGenerator;
     private TransNetwork transNetwork = null;
 
+    private LocalDateTime lastGeneration = LocalDateTime.now();
+    private LocalDateTime lastSave = LocalDateTime.now();
+    @Override
+    public LocalDateTime getLastGeneration() {
+        return lastGeneration;
+    }
+    @Override
+    public LocalDateTime getLastSave() {
+        return lastSave;
+    }
+    public void setLastGeneration(LocalDateTime lastGeneration) {
+        this.lastGeneration = lastGeneration;
+    }
+    public void setLastSave(LocalDateTime lastSave) {
+        this.lastSave = lastSave;
+    }
+
+
+    @Autowired
     public TransNetworkService(TransNetworkGenerator transNetworkGenerator, TransNetworkRepository transNetworkRepository) {
         this.transNetworkGenerator = transNetworkGenerator;
         this.transNetworkRepository = transNetworkRepository;
@@ -69,5 +89,10 @@ public class TransNetworkService extends TransService{
         aE.stream().forEach(a->transList.add((TransNetwork) a));
         lastSave = LocalDateTime.now();
         transNetworkRepository.saveAll(transList);
+    }
+
+    @Override
+    public synchronized void saveOne(AbstractEntity abstractEntity) {
+        transNetworkRepository.save((TransNetwork)abstractEntity);
     }
 }

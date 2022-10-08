@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.itm.gendata.components.TransFuelEntityGenerator;
 import ru.itm.gendata.config.SystemConfig;
-import ru.itm.gendata.entity.trans.AbstractEntity;
-import ru.itm.gendata.entity.trans.TransCoord;
-import ru.itm.gendata.entity.trans.TransFuel;
-import ru.itm.gendata.entity.trans.TransFuelRepository;
+import ru.itm.gendata.entity.trans.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,6 +20,25 @@ public class TransFuelService extends TransService{
     private TransFuel transFuel = null;
     private TransFuelEntityGenerator transFuelEntityGenerator;
     private static TransFuelRepository transFuelRepository;
+
+    private LocalDateTime lastGeneration = LocalDateTime.now();
+    private LocalDateTime lastSave = LocalDateTime.now();
+    @Override
+    public LocalDateTime getLastGeneration() {
+        return lastGeneration;
+    }
+    @Override
+    public LocalDateTime getLastSave() {
+        return lastSave;
+    }
+    public void setLastGeneration(LocalDateTime lastGeneration) {
+        this.lastGeneration = lastGeneration;
+    }
+    public void setLastSave(LocalDateTime lastSave) {
+        this.lastSave = lastSave;
+    }
+
+
 
     @Autowired
     public void setTransFuelEntityGenerator(TransFuelEntityGenerator transFuelEntityGenerator) {
@@ -85,6 +101,11 @@ public class TransFuelService extends TransService{
         aE.stream().forEach(a->transList.add((TransFuel) a));
         lastSave = LocalDateTime.now();
         transFuelRepository.saveAll(transList);
+    }
+
+    @Override
+    public synchronized void saveOne(AbstractEntity abstractEntity) {
+        transFuelRepository.save((TransFuel)abstractEntity);
     }
 
 

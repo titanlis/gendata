@@ -79,22 +79,6 @@ public class TransFuelEntityGenerator implements AbstractEntitiesGenerator{
         return fuelLevel;
     }
 
-    /**
-     * Возвращает время начала смены. 9:00
-     * Если сейчас, например 8 часов, то значит смена началась в 9:00, но вчера.
-     * Если сейчас 14:00, то значит смена началась сегодня в 9:00
-     * @return начало смены
-     */
-    private Calendar getStartShift() {
-        Calendar calendar = Calendar.getInstance();
-        if(calendar.get(Calendar.HOUR_OF_DAY)<9){
-            calendar.set(Calendar.DATE,calendar.get(Calendar.DATE)-1);
-        }
-        calendar.set(Calendar.HOUR_OF_DAY,9);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        return calendar;
-    }
 
     public Calendar getShiftDate() {
         return shiftDate;

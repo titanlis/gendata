@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Таблицы должны быть созданы. Работает в режиме update.
  */
 @SpringBootApplication
-public class GenDataApplication {
+public class GendataApplication {
     public static void main(String[] args) {
-        SpringApplication.run(GenDataApplication.class, args);
+        SpringApplication.run(GendataApplication.class, args);
     }
 }

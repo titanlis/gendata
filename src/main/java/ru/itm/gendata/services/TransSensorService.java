@@ -23,6 +23,24 @@ public class TransSensorService extends TransService {
     private static TransSensorRepository transSensorRepository;
     private TransSensor transSensor = null;
 
+    private LocalDateTime lastGeneration = LocalDateTime.now();
+    private LocalDateTime lastSave = LocalDateTime.now();
+    @Override
+    public LocalDateTime getLastGeneration() {
+        return lastGeneration;
+    }
+    @Override
+    public LocalDateTime getLastSave() {
+        return lastSave;
+    }
+    public void setLastGeneration(LocalDateTime lastGeneration) {
+        this.lastGeneration = lastGeneration;
+    }
+    public void setLastSave(LocalDateTime lastSave) {
+        this.lastSave = lastSave;
+    }
+
+
     @Autowired
     public void setTransSensorRepository(TransSensorRepository transSensorRepository) {
         this.transSensorRepository = transSensorRepository;
@@ -75,6 +93,11 @@ public class TransSensorService extends TransService {
         aE.stream().forEach(a->transList.add((TransSensor) a));
         lastSave = LocalDateTime.now();
         transSensorRepository.saveAll(transList);
+    }
+
+    @Override
+    public synchronized void saveOne(AbstractEntity abstractEntity) {
+        transSensorRepository.save((TransSensor)abstractEntity);
     }
 
 
