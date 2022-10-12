@@ -32,6 +32,15 @@ public class SystemConfig {
         SystemConfig.fuelConsumptionPerHour = fuelConsumptionPerHour;
     }
 
+    public static Integer getIntegerEquipmentId() {
+        return Integer.valueOf(Math.toIntExact(equipmentId));
+    }
+
+    public static Short getShortEquipmentId() {
+        int ret = getIntegerEquipmentId();
+        return (short)ret;
+    }
+
     public static Long getEquipmentId() {
         return equipmentId;
     }

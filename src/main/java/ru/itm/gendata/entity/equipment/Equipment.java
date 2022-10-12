@@ -10,7 +10,6 @@ public class Equipment{
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id", nullable = false)
 	private Long id;
-
 	private String equip;
 	private Long equip_type_id;
 	private String description;

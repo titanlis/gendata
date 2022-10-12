@@ -99,4 +99,9 @@ public class TransKeysDrillingService extends TransService{
         transKeysDrillingRepository.save((TransKeysDrilling)abstractEntity);
     }
 
+    @Override
+    public String getName() {
+        return "TransDrillingService";
+    }
+
 }

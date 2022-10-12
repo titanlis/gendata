@@ -25,14 +25,14 @@ public class AllService{
     private TransKeysDrillingService transKeysDrillingService;
     private TransNetworkService transNetworkService;
     private TransCycleService transCycleService;
-
+    private TransRefuelService transRefuelService;
     private Thread thread = null;
 
     @Autowired
     public AllService(TransFuelService transFuelService, TransCoordService transCoordService,
                       TransSensorService transSensorService, TransKeysCycleService transKeysCycleService,
                       TransKeysDrillingService transKeysDrillingService, TransNetworkService transNetworkService,
-                      TransCycleService transCycleService) {
+                      TransCycleService transCycleService, TransRefuelService transRefuelService) {
         this.transFuelService = transFuelService;
         this.transCoordService = transCoordService;
         this.transSensorService = transSensorService;
@@ -40,6 +40,7 @@ public class AllService{
         this.transKeysDrillingService = transKeysDrillingService;
         this.transNetworkService = transNetworkService;
         this.transCycleService = transCycleService;
+        this.transRefuelService = transRefuelService;
     }
 
     private Runnable task = () -> {
@@ -52,6 +53,7 @@ public class AllService{
         List<AbstractEntity> transKeysDrillingList = new LinkedList<>();
         List<AbstractEntity> transNetworkList = new LinkedList<>();
         List<AbstractEntity> transCycleList = new LinkedList<>();
+        List<AbstractEntity> transRefuelList = new LinkedList<>();
 
         while (!SystemConfig.isNeedStop()) {
             now = LocalDateTime.now();
@@ -63,6 +65,7 @@ public class AllService{
             transGenerate("trans_keys_drilling", 45L, 120L, now, transKeysDrillingList);
             transGenerate("trans_network", 30L, 120L, now, transNetworkList);
             transGenerate("trans_cycles", 900L, 900L, now, transCycleList);
+            transGenerate("trans_refuel", 10800L, 10800L, now, transRefuelList);
 
             pause(1L);    //сек
         }
@@ -100,9 +103,12 @@ public class AllService{
                 transService.stop();
             }
             AbstractEntity abstractEntity = transService.generate();
-            logger.info("New data: " + abstractEntity.toStringShow());
             if(abstractEntity!=null){
+                logger.info("New data: " + abstractEntity.toStringShow());
                 transService.saveOne(abstractEntity);
+            }
+            else{
+                logger.warn("Generation Error " + transService.getName());
             }
         }
         else{
@@ -179,6 +185,7 @@ public class AllService{
             case "trans_sensor" -> transSensorService;
             case "trans_network" -> transNetworkService;
             case "trans_cycles" -> transCycleService;
+            case "trans_refuel" -> transRefuelService;
 
             default -> null;
         };
@@ -194,5 +201,9 @@ public class AllService{
 
     public TransCycleService getTransCycleService() {
         return transCycleService;
+    }
+
+    public TransRefuelService getTransRefuelService() {
+        return transRefuelService;
     }
 }

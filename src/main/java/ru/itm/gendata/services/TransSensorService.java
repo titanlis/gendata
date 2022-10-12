@@ -100,6 +100,11 @@ public class TransSensorService extends TransService {
         transSensorRepository.save((TransSensor)abstractEntity);
     }
 
+    @Override
+    public String getName() {
+        return "TransSensorService";
+    }
+
 
     @Override
     public String getData() {

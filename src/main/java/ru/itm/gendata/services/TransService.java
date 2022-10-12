@@ -15,7 +15,7 @@ public abstract class TransService {
     public abstract void stop();
     public abstract String getData();
     public abstract AbstractEntity generate();
-
     public abstract void saveToBase(List<AbstractEntity> aE);
     public abstract void saveOne(AbstractEntity abstractEntity);
+    public abstract String getName();
 }

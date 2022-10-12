@@ -17,10 +17,13 @@ public interface AbstractEntitiesGenerator {
      */
     default Calendar getStartShift() {
         Calendar calendar = Calendar.getInstance();
-        if(calendar.get(Calendar.HOUR_OF_DAY)<9){
+        if(calendar.get(Calendar.HOUR_OF_DAY) < 7 || (calendar.get(Calendar.HOUR_OF_DAY)==7 && calendar.get(Calendar.MINUTE)<30)){
             calendar.set(Calendar.DATE,calendar.get(Calendar.DATE)-1);
         }
-        calendar.set(Calendar.HOUR_OF_DAY,9);
+        else{
+            calendar.set(Calendar.HOUR_OF_DAY,0);
+        }
+
         calendar.set(Calendar.MINUTE,0);
         calendar.set(Calendar.SECOND,0);
         return calendar;

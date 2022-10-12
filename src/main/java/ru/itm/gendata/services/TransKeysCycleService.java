@@ -98,4 +98,9 @@ public class TransKeysCycleService  extends TransService{
         transKeysCycleRepository.save((TransKeysCycle)abstractEntity);
     }
 
+    @Override
+    public String getName() {
+        return "TransKeysCycleService";
+    }
+
 }

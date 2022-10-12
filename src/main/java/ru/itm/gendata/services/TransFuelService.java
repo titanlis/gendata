@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -39,6 +40,18 @@ public class TransFuelService extends TransService{
     }
 
 
+    /**
+     *
+     * @param idEquipment
+     * @return Размер бака
+     */
+    public  Double getFuelRaw(Long idEquipment, Double defSize){
+        Optional<TransFuel> optionalTransFuel = transFuelRepository.findFirstByEquipIdEquals(idEquipment);
+        if(optionalTransFuel.isPresent()){
+            return optionalTransFuel.get().getFuelRaw();
+        }
+        return defSize;
+    }
 
     @Autowired
     public void setTransFuelEntityGenerator(TransFuelEntityGenerator transFuelEntityGenerator) {
@@ -106,6 +119,11 @@ public class TransFuelService extends TransService{
     @Override
     public synchronized void saveOne(AbstractEntity abstractEntity) {
         transFuelRepository.save((TransFuel)abstractEntity);
+    }
+
+    @Override
+    public String getName() {
+        return "TransFuelService";
     }
 
 

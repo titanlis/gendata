@@ -3,9 +3,8 @@ package ru.itm.gendata.entity.trans;
 import javax.persistence.*;
 import java.time.Instant;
 import java.time.LocalDate;
-
 @Entity
-@Table(name = "TRANS_REFUEL", schema = "TRANS")
+@Table(name = "trans_refuel", schema = "TRANS")
 public class TransRefuel extends AbstractEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +23,7 @@ public class TransRefuel extends AbstractEntity{
     @Column(name = "START_DT", nullable = false)
     private Instant startDt;                            //Время записи
 
-    @Column(name = "END_DT", nullable = false)
+    @Column(name = "END_DT")
     private Instant endDt;                              //Время окончания заправки
 
     @Column(name = "LOC_ID")

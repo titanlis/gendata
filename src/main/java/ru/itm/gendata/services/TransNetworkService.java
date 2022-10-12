@@ -95,4 +95,10 @@ public class TransNetworkService extends TransService{
     public synchronized void saveOne(AbstractEntity abstractEntity) {
         transNetworkRepository.save((TransNetwork)abstractEntity);
     }
+
+    @Override
+    public String getName() {
+        return "TransNetworkService";
+    }
+
 }

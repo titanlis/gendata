@@ -105,6 +105,11 @@ public class TransCoordService extends TransService{
         transCoordRepository.save((TransCoord)abstractEntity);
     }
 
+    @Override
+    public String getName() {
+        return "TransCoordService";
+    }
+
 
     public Float getCoordLevel() {
         if(transCoord!=null){

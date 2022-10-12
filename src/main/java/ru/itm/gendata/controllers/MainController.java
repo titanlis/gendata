@@ -57,6 +57,7 @@ public class MainController {
         model.put("keysDrilling", allService.getTransKeysDrillingService().getData());
         model.put("transNetwork", allService.getTransNetworkService().getData());
         model.put("transCycle", (allService.getTransCycleService().isStarting())?"p-3 border bg-info bg-gradient":"p-3 border bg-light");
+        model.put("transRefuel", (allService.getTransRefuelService().isStarting())?"p-3 border bg-info bg-gradient":"p-3 border bg-light");
 
         return "index.html";
     }
@@ -197,6 +198,32 @@ public class MainController {
         allService.off("trans_cycles");
         return  "redirect:/";
     }
+
+
+    @RequestMapping(value="/trans_refuel_on", method= RequestMethod.GET)
+    public String transRefuelOn(Map<String, Object> model) {
+        allService.transGenerateOneAndSave("trans_refuel");
+        allService.on("trans_refuel");
+        return  "redirect:/";
+    }
+
+    /**
+     * Генерация и сохранение одной записи tarns_cycle
+     * @param model
+     * @return
+     */
+    @RequestMapping(value="/trans_refuel_one", method= RequestMethod.GET)
+    public String transRefuelOne(Map<String, Object> model) {
+        allService.transGenerateOneAndSave("trans_refuel");
+        return  "redirect:/";
+    }
+
+    @RequestMapping(value="/trans_refuel_off", method= RequestMethod.GET)
+    public String transRefuelOff(Map<String, Object> model) {
+        allService.off("trans_refuel");
+        return  "redirect:/";
+    }
+
 
 
     /**

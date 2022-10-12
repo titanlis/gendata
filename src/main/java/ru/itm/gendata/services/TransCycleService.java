@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class TransCycleService extends TransService{
@@ -22,6 +23,7 @@ public class TransCycleService extends TransService{
     private static TransCycleRepository transCycleRepository;
     private LocalDateTime lastGeneration = LocalDateTime.now();
     private LocalDateTime lastSave = LocalDateTime.now();
+    private Random random = new Random();
 
     @Autowired
     public TransCycleService(TransCycleGenerator transCycleGenerator, TransCycleRepository transCycleRepository) {
@@ -133,11 +135,30 @@ public class TransCycleService extends TransService{
         lastSave = LocalDateTime.now();
     }
 
+    @Override
+    public String getName() {
+        return "TransCycleService";
+    }
+
     public void setLastGeneration(LocalDateTime lastGeneration) {
         this.lastGeneration = lastGeneration;
     }
     public void setLastSave(LocalDateTime lastSave) {
         this.lastSave = lastSave;
+    }
+
+    public List<Integer> getAllId(){
+        List<Integer> listId = new LinkedList<>();
+        transCycleRepository.findAll().stream().forEach(cycle -> {
+            listId.add(cycle.getId());
+        });
+        return listId;
+    }
+
+
+    public Integer getRandomId(){
+        List<Integer> listId = getAllId();
+        return listId.get(random.nextInt(listId.size()-1));
     }
 
 }
